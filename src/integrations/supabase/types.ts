@@ -476,7 +476,7 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
-          code: string
+          code?: string
           created_at?: string
           email: string
           expires_at: string
