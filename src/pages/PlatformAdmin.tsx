@@ -215,10 +215,15 @@ export default function PlatformAdmin() {
                 <p className="text-sm text-muted-foreground">Controle global do sistema</p>
               </div>
             </div>
-            <Button variant="outline" onClick={loadData} disabled={refreshing}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+                <XCircle className="h-5 w-5" />
+              </Button>
+              <Button variant="outline" onClick={loadData} disabled={refreshing}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                Atualizar
+              </Button>
+            </div>
           </div>
         </div>
       </header>
