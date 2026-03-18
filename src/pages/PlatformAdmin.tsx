@@ -69,6 +69,7 @@ const roleLabels: Record<string, string> = {
 const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('pt-BR') : "—";
 
 export default function PlatformAdmin() {
+  const navigate = useNavigate();
   const { isPlatformAdmin, loading: adminLoading } = usePlatformAdmin();
   const { user, loading: authLoading } = useAuth();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
