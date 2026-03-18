@@ -10,7 +10,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const publicKey = Deno.env.get("VITE_MERCADO_PAGO_PUBLIC_KEY") || Deno.env.get("MERCADO_PAGO_PUBLIC_KEY") || "";
+  const publicKey = Deno.env.get("VITE_MERCADO_PAGO_CHAVE_PUBLICA") || Deno.env.get("VITE_MERCADO_PAGO_PUBLIC_KEY") || Deno.env.get("MERCADO_PAGO_PUBLIC_KEY") || "";
 
   return new Response(
     JSON.stringify({ public_key: publicKey }),
