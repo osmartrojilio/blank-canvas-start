@@ -13,7 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        mono: ["Geist Mono", "ui-monospace", "monospace"],
+      },
       colors: {
+        canvas: "hsl(var(--canvas))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
