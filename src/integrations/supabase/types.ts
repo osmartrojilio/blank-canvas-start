@@ -1721,10 +1721,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_admin_for_checkout: {
-        Args: { _organization_id: string; _user_id: string }
-        Returns: boolean
-      }
       check_cnpj_available: { Args: { p_cnpj: string }; Returns: boolean }
       complete_user_signup: {
         Args: {
