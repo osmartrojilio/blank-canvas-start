@@ -1,0 +1,25 @@
+project_id = "xtxzhaddomtwlktuhkxf"
+
+[functions]
+  [functions.api-keys]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.cancel-subscription]
+    verify_jwt = false
+  [functions.mercado-pago-checkout]
+    verify_jwt = false
+  [functions.mercado-pago-webhook]
+    verify_jwt = false
+  [functions.public-api]
+    verify_jwt = false
+  [functions.send-invitation-email]
+    verify_jwt = false
+  [functions.send-verification-code]
+    verify_jwt = false
+  [functions.verify-email-code]
+    verify_jwt = false
+  [functions.webhook-trigger]
+    verify_jwt = false
+  [functions.ai-chat]
+    verify_jwt = false
