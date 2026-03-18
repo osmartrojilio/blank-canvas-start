@@ -7,6 +7,8 @@ const allowedOrigins = [
   "https://gerenciarfrotas.com.br",
   "https://www.gerenciarfrotas.com.br",
   "https://gerenciarfrotas.lovable.app",
+  "https://id-preview--8b65be95-4cfa-46f4-99e6-53bd519c6b55.lovable.app",
+  "https://8b65be95-4cfa-46f4-99e6-53bd519c6b55.lovableproject.com",
   "https://id-preview--ac08c6c0-6711-41ae-9c07-912886083cce.lovable.app",
   "https://ac08c6c0-6711-41ae-9c07-912886083cce.lovableproject.com",
   "http://localhost:5173",
