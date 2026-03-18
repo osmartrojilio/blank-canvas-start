@@ -1,1 +1,4 @@
 project_id = "poqfgwtovpkugpdqskbm"
+
+[functions.get-mp-public-key]
+verify_jwt = false
