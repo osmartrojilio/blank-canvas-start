@@ -28,7 +28,7 @@ export default function SubscriptionValidityCard() {
     endDate = new Date(organization.subscription_ends_at);
     // Assume monthly billing
     startDate = new Date(endDate);
-    startDate.setMonth(startDate.getMonth() - (organization.duration_months || 1));
+    startDate.setMonth(startDate.getMonth() - 1);
   }
 
   if (!startDate || !endDate) return null;
