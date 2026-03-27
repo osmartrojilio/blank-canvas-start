@@ -74,6 +74,11 @@ const Dashboard = () => {
           <p className="page-subtitle">Visão geral da sua frota de veículos</p>
         </div>
 
+        {/* Subscription Validity */}
+        <div className="mb-6">
+          <SubscriptionValidityCard />
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
@@ -103,11 +108,6 @@ const Dashboard = () => {
             subtitle={`Lucro: ${formatCurrency(monthlyProfit)}`}
             icon={DollarSign}
           />
-        </div>
-
-        {/* Subscription Validity */}
-        <div className="mb-8">
-          <SubscriptionValidityCard />
         </div>
 
         {/* Proactive Alerts */}
