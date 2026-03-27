@@ -181,7 +181,16 @@ export function PlanosSettings() {
     return statusMap[status] || { label: status, variant: "outline" as const };
   };
 
-  const canCancel = ["active", "trialing"].includes(subscription.status);
+  const canCancel = (() => {
+    if (subscription.status === "trialing") return true;
+    if (subscription.status === "active" && organization?.last_payment_at) {
+      const paymentDate = new Date(organization.last_payment_at);
+      const now = new Date();
+      const daysSincePayment = Math.floor((now.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24));
+      return daysSincePayment <= 7;
+    }
+    return false;
+  })();
 
   const getCancelWarningMessage = () => {
     if (subscription.status === "trialing") {
