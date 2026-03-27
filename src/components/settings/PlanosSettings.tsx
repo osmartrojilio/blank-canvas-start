@@ -50,7 +50,7 @@ export function PlanosSettings() {
   const [canceling, setCanceling] = useState(false);
   const [plan, setPlan] = useState<PlanInfo | null>(null);
   const [usage, setUsage] = useState<UsageInfo>({ trucks: 0, users: 0, storage_mb: 0 });
-  const [subscription, setSubscription] = useState<SubscriptionInfo>({ status: "", ends_at: null, trial_ends_at: null });
+  const [subscription, setSubscription] = useState<SubscriptionInfo>({ status: "", ends_at: null, trial_ends_at: null, last_payment_at: null });
   const [allPlans, setAllPlans] = useState<PlanInfo[]>([]);
 
   useEffect(() => {
