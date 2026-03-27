@@ -27,10 +27,9 @@ function getCorsHeaders(req: Request): Record<string, string> {
   };
 }
 
-// Calculate subscription end date based on duration_months from org creation date
-function calculateSubscriptionEndDate(durationMonths: number, orgCreatedAt?: string): Date {
-  const baseDate = orgCreatedAt ? new Date(orgCreatedAt) : new Date();
-  const endDate = new Date(baseDate);
+// Calculate subscription end date based on duration_months from payment date
+function calculateSubscriptionEndDate(durationMonths: number): Date {
+  const endDate = new Date();
   endDate.setMonth(endDate.getMonth() + durationMonths);
   return endDate;
 }
