@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children, requiredRole, requiresPaidPlan }: ProtectedRouteProps) {
   const { user, loading, userRole, needsOnboarding, profile } = useAuth();
   const location = useLocation();
-  const { isFreePlan } = usePlanLimits();
+  const { isFreePlan, isBlocked } = usePlanLimits();
 
   if (loading) {
     return (
@@ -41,6 +41,11 @@ export default function ProtectedRoute({ children, requiredRole, requiresPaidPla
     if (location.pathname !== "/completar-cadastro") {
       return <Navigate to="/completar-cadastro" replace />;
     }
+  }
+
+  // Block users with blocked subscription (trial_canceled, canceled_pending_refund, expired)
+  if (isBlocked && location.pathname !== "/planos" && location.pathname !== "/configuracoes") {
+    return <Navigate to="/planos" replace />;
   }
 
   // Block free plan users from premium routes

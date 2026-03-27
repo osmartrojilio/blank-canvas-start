@@ -7,7 +7,18 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreditCard, Truck, Users, Paperclip, ArrowUpCircle, Check, Calendar } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { CreditCard, Truck, Users, Paperclip, ArrowUpCircle, Check, Calendar, XCircle, AlertTriangle } from "lucide-react";
 
 interface PlanInfo {
   name: string;
@@ -33,6 +44,7 @@ export function PlanosSettings() {
   const { toast } = useToast();
   const { profile, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [canceling, setCanceling] = useState(false);
   const [plan, setPlan] = useState<PlanInfo | null>(null);
   const [usage, setUsage] = useState<UsageInfo>({ trucks: 0, users: 0, storage_mb: 0 });
   const [subscription, setSubscription] = useState<SubscriptionInfo>({ status: "", ends_at: null, trial_ends_at: null });
@@ -49,7 +61,6 @@ export function PlanosSettings() {
     }
 
     try {
-      // Load organization with plan
       const { data: org, error: orgError } = await supabase
         .from("organizations")
         .select(`
@@ -78,7 +89,6 @@ export function PlanosSettings() {
         });
       }
 
-      // Load all active plans for upgrade options
       const { data: plans, error: plansError } = await supabase
         .from("subscription_plans")
         .select("*")
@@ -88,19 +98,15 @@ export function PlanosSettings() {
       if (plansError) throw plansError;
       setAllPlans(plans || []);
 
-      // Get current usage
       const { count: usersCount } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true })
         .eq("organization_id", profile.organization_id);
 
-      // TODO: Get trucks count when trucks table exists
-      // TODO: Get storage usage from storage bucket
-
       setUsage({
-        trucks: 0, // Will be updated when trucks table exists
+        trucks: 0,
         users: usersCount || 0,
-        storage_mb: 45, // Mock value
+        storage_mb: 45,
       });
     } catch (error) {
       if (import.meta.env.DEV) {
@@ -116,11 +122,47 @@ export function PlanosSettings() {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    setCanceling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cancel-subscription");
+
+      if (error) throw error;
+
+      const result = data as { success?: boolean; message?: string; error?: string; scenario?: string };
+
+      if (result.error) {
+        toast({
+          title: "Erro ao cancelar",
+          description: result.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Plano cancelado",
+        description: result.message || "Sua assinatura foi cancelada.",
+      });
+
+      // Reload data
+      await loadPlanInfo();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erro ao cancelar o plano.";
+      toast({
+        title: "Erro",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setCanceling(false);
+    }
+  };
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
     return new Date(dateStr).toLocaleDateString("pt-BR");
   };
-
 
   const getStatusInfo = (status: string) => {
     const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -128,9 +170,64 @@ export function PlanosSettings() {
       trialing: { label: "Período de Teste", variant: "secondary" },
       past_due: { label: "Pagamento Pendente", variant: "destructive" },
       canceled: { label: "Cancelado", variant: "destructive" },
+      trial_canceled: { label: "Trial Cancelado", variant: "destructive" },
+      canceled_pending_refund: { label: "Cancelado - Reembolso em Análise", variant: "destructive" },
+      canceled_active_until_end: { label: "Cancelado - Ativo até o fim do período", variant: "outline" },
+      expired: { label: "Expirado", variant: "destructive" },
       unpaid: { label: "Não Pago", variant: "destructive" },
     };
     return statusMap[status] || { label: status, variant: "outline" as const };
+  };
+
+  const canCancel = ["active", "trialing"].includes(subscription.status);
+
+  const getCancelWarningMessage = () => {
+    if (subscription.status === "trialing") {
+      return "Ao cancelar durante o período de teste, seu acesso será bloqueado imediatamente. Deseja continuar?";
+    }
+    return "Ao cancelar sua assinatura, dependendo do período, você pode ser elegível para reembolso ou manter acesso até o fim do ciclo pago. Deseja continuar?";
+  };
+
+  const getStatusBanner = () => {
+    switch (subscription.status) {
+      case "trial_canceled":
+        return {
+          icon: <XCircle className="h-5 w-5" />,
+          title: "Período de teste encerrado",
+          message: "Seu período de teste foi encerrado e sua assinatura foi cancelada. Faça upgrade para continuar usando o sistema.",
+          variant: "destructive" as const,
+        };
+      case "canceled_pending_refund":
+        return {
+          icon: <AlertTriangle className="h-5 w-5" />,
+          title: "Cancelamento em análise",
+          message: "Sua assinatura foi cancelada e está em análise para reembolso. Entraremos em contato em breve.",
+          variant: "destructive" as const,
+        };
+      case "canceled_active_until_end":
+        return {
+          icon: <AlertTriangle className="h-5 w-5" />,
+          title: "Assinatura será encerrada",
+          message: `Sua assinatura será encerrada ao final do período atual (${formatDate(subscription.ends_at)}). Você mantém acesso até lá.`,
+          variant: "outline" as const,
+        };
+      case "expired":
+        return {
+          icon: <XCircle className="h-5 w-5" />,
+          title: "Assinatura expirada",
+          message: "Sua assinatura expirou. Faça upgrade para continuar usando o sistema.",
+          variant: "destructive" as const,
+        };
+      case "canceled":
+        return {
+          icon: <XCircle className="h-5 w-5" />,
+          title: "Assinatura cancelada",
+          message: "Sua assinatura foi cancelada. Faça upgrade para continuar usando o sistema.",
+          variant: "destructive" as const,
+        };
+      default:
+        return null;
+    }
   };
 
   const getUsagePercent = (current: number, max: number | null) => {
@@ -149,9 +246,23 @@ export function PlanosSettings() {
   }
 
   const statusInfo = getStatusInfo(subscription.status);
+  const statusBanner = getStatusBanner();
 
   return (
     <div className="space-y-6">
+      {/* Status banner for canceled/expired states */}
+      {statusBanner && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="flex items-start gap-3 pt-6">
+            <div className="text-destructive mt-0.5">{statusBanner.icon}</div>
+            <div>
+              <h4 className="font-semibold text-destructive">{statusBanner.title}</h4>
+              <p className="text-sm text-muted-foreground mt-1">{statusBanner.message}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -187,6 +298,36 @@ export function PlanosSettings() {
               </p>
             </div>
           </div>
+
+          {/* Cancel subscription button */}
+          {canCancel && isAdmin && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="w-full sm:w-auto">
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Cancelar Plano
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Cancelar assinatura?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {getCancelWarningMessage()}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Manter plano</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleCancelSubscription}
+                    disabled={canceling}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {canceling ? "Cancelando..." : "Sim, cancelar"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </CardContent>
       </Card>
 

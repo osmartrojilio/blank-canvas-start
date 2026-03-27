@@ -1058,6 +1058,8 @@ export type Database = {
       }
       organizations: {
         Row: {
+          canceled_at: string | null
+          cancellation_reason: string | null
           cnpj: string | null
           created_at: string
           currency: string | null
@@ -1065,9 +1067,11 @@ export type Database = {
           fiscal_period_start: number | null
           id: string
           is_active: boolean | null
+          last_payment_at: string | null
           logo_url: string | null
           name: string
           plan_id: string | null
+          refund_eligible: boolean | null
           slug: string
           subscription_ends_at: string | null
           subscription_status:
@@ -1078,6 +1082,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          canceled_at?: string | null
+          cancellation_reason?: string | null
           cnpj?: string | null
           created_at?: string
           currency?: string | null
@@ -1085,9 +1091,11 @@ export type Database = {
           fiscal_period_start?: number | null
           id?: string
           is_active?: boolean | null
+          last_payment_at?: string | null
           logo_url?: string | null
           name: string
           plan_id?: string | null
+          refund_eligible?: boolean | null
           slug: string
           subscription_ends_at?: string | null
           subscription_status?:
@@ -1098,6 +1106,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          canceled_at?: string | null
+          cancellation_reason?: string | null
           cnpj?: string | null
           created_at?: string
           currency?: string | null
@@ -1105,9 +1115,11 @@ export type Database = {
           fiscal_period_start?: number | null
           id?: string
           is_active?: boolean | null
+          last_payment_at?: string | null
           logo_url?: string | null
           name?: string
           plan_id?: string | null
+          refund_eligible?: boolean | null
           slug?: string
           subscription_ends_at?: string | null
           subscription_status?:
