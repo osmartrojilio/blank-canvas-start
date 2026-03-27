@@ -252,6 +252,9 @@ export function PlanosSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Expiration alert */}
+      <ExpirationAlert />
+
       {/* Subscription validity card */}
       <SubscriptionValidityCard />
 
