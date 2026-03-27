@@ -251,7 +251,14 @@ Deno.serve(async (req) => {
 
       // Process approved payments - activate subscription
       if (payment.status === "approved" && organization_id && plan_id) {
-        const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months);
+        // Fetch org created_at to calculate end date from creation
+        const { data: orgData } = await supabaseAdmin
+          .from("organizations")
+          .select("created_at")
+          .eq("id", organization_id)
+          .single();
+
+        const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months, orgData?.created_at);
 
         const { error: updateError } = await supabaseAdmin
           .from("organizations")
@@ -261,6 +268,7 @@ Deno.serve(async (req) => {
             subscription_ends_at: subscriptionEndsAt.toISOString(),
             trial_ends_at: null,
             duration_months: duration_months,
+            last_payment_at: new Date().toISOString(),
           })
           .eq("id", organization_id);
 
