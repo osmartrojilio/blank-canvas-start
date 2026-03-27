@@ -40,6 +40,7 @@ interface SubscriptionInfo {
   status: string;
   ends_at: string | null;
   trial_ends_at: string | null;
+  last_payment_at: string | null;
 }
 
 export function PlanosSettings() {
@@ -69,6 +70,7 @@ export function PlanosSettings() {
           subscription_status,
           subscription_ends_at,
           trial_ends_at,
+          last_payment_at,
           subscription_plans (
             name,
             price_monthly,
@@ -88,6 +90,7 @@ export function PlanosSettings() {
           status: org.subscription_status || "trialing",
           ends_at: org.subscription_ends_at,
           trial_ends_at: org.trial_ends_at,
+          last_payment_at: org.last_payment_at,
         });
       }
 
@@ -183,8 +186,8 @@ export function PlanosSettings() {
 
   const canCancel = (() => {
     if (subscription.status === "trialing") return true;
-    if (subscription.status === "active" && organization?.last_payment_at) {
-      const paymentDate = new Date(organization.last_payment_at);
+    if (subscription.status === "active" && subscription.last_payment_at) {
+      const paymentDate = new Date(subscription.last_payment_at);
       const now = new Date();
       const daysSincePayment = Math.floor((now.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24));
       return daysSincePayment <= 7;
