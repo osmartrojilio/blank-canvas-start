@@ -175,8 +175,8 @@ export default function FloatingAssistant() {
         <div className="fixed bottom-20 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] max-h-[70vh] sm:max-h-[520px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col animate-scale-in overflow-hidden">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground rounded-t-2xl">
-            <div className="w-9 h-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-              <Bot className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-full overflow-hidden">
+              <img src={frotinhaAvatar} alt="Frotinha" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm">Frotinha</p>
@@ -301,14 +301,14 @@ export default function FloatingAssistant() {
               setShowBubble(false);
             }}
             className={cn(
-              "w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110",
+              "w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 overflow-hidden",
               isOpen
                 ? "bg-muted text-muted-foreground"
-                : "bg-primary text-primary-foreground animate-[pulse_3s_ease-in-out_infinite]"
+                : "animate-[pulse_3s_ease-in-out_infinite]"
             )}
             aria-label="Assistente Virtual"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+            {isOpen ? <X className="w-6 h-6" /> : <img src={frotinhaAvatar} alt="Frotinha" className="w-full h-full object-cover" />}
           </button>
         </div>
       </div>
