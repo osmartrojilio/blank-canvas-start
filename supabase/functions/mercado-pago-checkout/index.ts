@@ -57,9 +57,10 @@ function checkRateLimit(organizationId: string): { allowed: boolean; retryAfter?
   return { allowed: true };
 }
 
-// Calculate subscription end date based on duration_months
-function calculateSubscriptionEndDate(durationMonths: number): Date {
-  const endDate = new Date();
+// Calculate subscription end date based on duration_months from org creation date
+function calculateSubscriptionEndDate(durationMonths: number, orgCreatedAt?: string): Date {
+  const baseDate = orgCreatedAt ? new Date(orgCreatedAt) : new Date();
+  const endDate = new Date(baseDate);
   endDate.setMonth(endDate.getMonth() + durationMonths);
   return endDate;
 }
@@ -362,7 +363,14 @@ Deno.serve(async (req) => {
 
     // If approved immediately, activate subscription
     if (paymentData.status === "approved") {
-      const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months);
+      // Fetch org created_at to calculate end date from creation
+      const { data: orgData } = await supabaseAdmin
+        .from("organizations")
+        .select("created_at")
+        .eq("id", organization_id)
+        .single();
+
+      const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months, orgData?.created_at);
 
       await supabaseAdmin
         .from("organizations")
@@ -372,6 +380,7 @@ Deno.serve(async (req) => {
           subscription_ends_at: subscriptionEndsAt.toISOString(),
           trial_ends_at: null,
           duration_months: duration_months,
+          last_payment_at: new Date().toISOString(),
         })
         .eq("id", organization_id);
 
