@@ -366,7 +366,14 @@ Deno.serve(async (req) => {
 
     // If approved immediately, activate subscription
     if (paymentData.status === "approved") {
-      const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months);
+      // Fetch current subscription end date for renewal logic
+      const { data: orgData } = await supabaseAdmin
+        .from("organizations")
+        .select("subscription_ends_at")
+        .eq("id", organization_id)
+        .single();
+
+      const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months, orgData?.subscription_ends_at);
 
       await supabaseAdmin
         .from("organizations")
