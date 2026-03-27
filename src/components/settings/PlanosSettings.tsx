@@ -40,6 +40,7 @@ interface SubscriptionInfo {
   status: string;
   ends_at: string | null;
   trial_ends_at: string | null;
+  last_payment_at: string | null;
 }
 
 export function PlanosSettings() {
@@ -49,7 +50,7 @@ export function PlanosSettings() {
   const [canceling, setCanceling] = useState(false);
   const [plan, setPlan] = useState<PlanInfo | null>(null);
   const [usage, setUsage] = useState<UsageInfo>({ trucks: 0, users: 0, storage_mb: 0 });
-  const [subscription, setSubscription] = useState<SubscriptionInfo>({ status: "", ends_at: null, trial_ends_at: null });
+  const [subscription, setSubscription] = useState<SubscriptionInfo>({ status: "", ends_at: null, trial_ends_at: null, last_payment_at: null });
   const [allPlans, setAllPlans] = useState<PlanInfo[]>([]);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export function PlanosSettings() {
           subscription_status,
           subscription_ends_at,
           trial_ends_at,
+          last_payment_at,
           subscription_plans (
             name,
             price_monthly,
@@ -88,6 +90,7 @@ export function PlanosSettings() {
           status: org.subscription_status || "trialing",
           ends_at: org.subscription_ends_at,
           trial_ends_at: org.trial_ends_at,
+          last_payment_at: org.last_payment_at,
         });
       }
 
@@ -181,7 +184,16 @@ export function PlanosSettings() {
     return statusMap[status] || { label: status, variant: "outline" as const };
   };
 
-  const canCancel = ["active", "trialing"].includes(subscription.status);
+  const canCancel = (() => {
+    if (subscription.status === "trialing") return true;
+    if (subscription.status === "active" && subscription.last_payment_at) {
+      const paymentDate = new Date(subscription.last_payment_at);
+      const now = new Date();
+      const daysSincePayment = Math.floor((now.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24));
+      return daysSincePayment <= 7;
+    }
+    return false;
+  })();
 
   const getCancelWarningMessage = () => {
     if (subscription.status === "trialing") {

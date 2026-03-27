@@ -22,6 +22,7 @@ interface Organization {
   subscription_status: string;
   trial_ends_at: string | null;
   subscription_ends_at: string | null;
+  last_payment_at: string | null;
 }
 
 interface UserRole {
