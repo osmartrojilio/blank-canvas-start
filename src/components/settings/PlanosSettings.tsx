@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CreditCard, Truck, Users, Paperclip, ArrowUpCircle, Check, Calendar, XCircle, AlertTriangle } from "lucide-react";
+import { CreditCard, Truck, Users, Paperclip, ArrowUpCircle, Check, Calendar, XCircle, AlertTriangle, Info } from "lucide-react";
 
 interface PlanInfo {
   name: string;
@@ -412,6 +412,14 @@ export function PlanosSettings() {
             <CardDescription>
               Compare e faça upgrade do seu plano
             </CardDescription>
+            {(subscription.status === "active" || subscription.status === "canceled_active_until_end") && subscription.ends_at && (
+              <div className="flex items-start gap-2 mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                <p className="text-sm text-muted-foreground">
+                  Ao renovar, o tempo restante da sua assinatura atual será preservado. A nova vigência será adicionada a partir do vencimento atual ({formatDate(subscription.ends_at)}).
+                </p>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
