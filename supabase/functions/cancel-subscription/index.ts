@@ -6,6 +6,123 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function sendCancellationEmail(
+  userEmail: string,
+  userName: string | null,
+  scenario: string,
+  accessUntil?: string | null
+) {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    console.error("RESEND_API_KEY not configured, skipping cancellation email");
+    return;
+  }
+
+  const name = userName || "Usuário";
+  let subject = "";
+  let bodyHtml = "";
+
+  const header = `
+    <div style="background-color:#1a1a2e;padding:30px 20px;text-align:center;">
+      <h1 style="color:#ffffff;font-size:24px;margin:0;">Gerenciar Frotas</h1>
+    </div>
+  `;
+  const footer = `
+    <div style="padding:20px;text-align:center;color:#888;font-size:12px;">
+      <p>Este é um e-mail automático. Por favor, não responda.</p>
+      <p>&copy; ${new Date().getFullYear()} Gerenciar Frotas. Todos os direitos reservados.</p>
+    </div>
+  `;
+
+  switch (scenario) {
+    case "trial_canceled":
+      subject = "Seu período de teste foi encerrado";
+      bodyHtml = `
+        ${header}
+        <div style="padding:30px 20px;font-family:Arial,sans-serif;color:#333;">
+          <p>Olá, <strong>${name}</strong>!</p>
+          <p>Seu período de teste gratuito foi encerrado e sua assinatura foi cancelada.</p>
+          <p>Sentimos muito em vê-lo partir! Se mudar de ideia, você pode assinar um de nossos planos a qualquer momento.</p>
+          <p>Se tiver dúvidas, entre em contato com nosso suporte.</p>
+          <p style="margin-top:30px;">Atenciosamente,<br><strong>Equipe Gerenciar Frotas</strong></p>
+        </div>
+        ${footer}
+      `;
+      break;
+
+    case "canceled_pending_refund":
+      subject = "Sua assinatura foi cancelada — reembolso em análise";
+      bodyHtml = `
+        ${header}
+        <div style="padding:30px 20px;font-family:Arial,sans-serif;color:#333;">
+          <p>Olá, <strong>${name}</strong>!</p>
+          <p>Sua assinatura foi cancelada e seu pagamento está em análise para reembolso.</p>
+          <p>O reembolso será processado em até <strong>5 dias úteis</strong> e o valor será devolvido ao método de pagamento original.</p>
+          <p>Se tiver dúvidas sobre o processo de reembolso, entre em contato com nosso suporte.</p>
+          <p style="margin-top:30px;">Atenciosamente,<br><strong>Equipe Gerenciar Frotas</strong></p>
+        </div>
+        ${footer}
+      `;
+      break;
+
+    case "canceled_active_until_end":
+      const endDate = accessUntil
+        ? new Date(accessUntil).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+        : "o final do período pago";
+      subject = "Sua assinatura foi cancelada";
+      bodyHtml = `
+        ${header}
+        <div style="padding:30px 20px;font-family:Arial,sans-serif;color:#333;">
+          <p>Olá, <strong>${name}</strong>!</p>
+          <p>Sua assinatura foi cancelada. Você continuará tendo acesso ao sistema até <strong>${endDate}</strong>.</p>
+          <p>Após essa data, seu acesso será encerrado automaticamente.</p>
+          <p>Se mudar de ideia, você pode renovar seu plano a qualquer momento antes do vencimento.</p>
+          <p style="margin-top:30px;">Atenciosamente,<br><strong>Equipe Gerenciar Frotas</strong></p>
+        </div>
+        ${footer}
+      `;
+      break;
+
+    default:
+      subject = "Sua assinatura foi cancelada";
+      bodyHtml = `
+        ${header}
+        <div style="padding:30px 20px;font-family:Arial,sans-serif;color:#333;">
+          <p>Olá, <strong>${name}</strong>!</p>
+          <p>Sua assinatura no Gerenciar Frotas foi cancelada.</p>
+          <p>Se tiver dúvidas ou quiser reativar seu plano, entre em contato com nosso suporte.</p>
+          <p style="margin-top:30px;">Atenciosamente,<br><strong>Equipe Gerenciar Frotas</strong></p>
+        </div>
+        ${footer}
+      `;
+      break;
+  }
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Gerenciar Frotas <onboarding@resend.dev>",
+        to: [userEmail],
+        subject,
+        html: bodyHtml,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("Resend error:", await res.text());
+    } else {
+      console.log("Cancellation email sent to", userEmail);
+    }
+  } catch (emailErr) {
+    console.error("Failed to send cancellation email:", emailErr);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -41,7 +158,7 @@ Deno.serve(async (req) => {
     // Get user's profile
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("organization_id")
+      .select("organization_id, full_name")
       .eq("id", user.id)
       .single();
 
@@ -114,6 +231,9 @@ Deno.serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Send email (non-blocking)
+      await sendCancellationEmail(user.email!, profile.full_name, "trial_canceled");
 
       return new Response(
         JSON.stringify({
@@ -202,6 +322,8 @@ Deno.serve(async (req) => {
           );
         }
 
+        await sendCancellationEmail(user.email!, profile.full_name, "canceled_pending_refund");
+
         return new Response(
           JSON.stringify({
             success: true,
@@ -235,6 +357,8 @@ Deno.serve(async (req) => {
         );
       }
 
+      await sendCancellationEmail(user.email!, profile.full_name, "canceled_active_until_end", org.subscription_ends_at);
+
       return new Response(
         JSON.stringify({
           success: true,
@@ -266,6 +390,8 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    await sendCancellationEmail(user.email!, profile.full_name, "canceled");
 
     return new Response(
       JSON.stringify({
