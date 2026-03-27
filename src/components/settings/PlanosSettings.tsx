@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CreditCard, Truck, Users, Paperclip, ArrowUpCircle, Check, Calendar, XCircle, AlertTriangle } from "lucide-react";
+import { CreditCard, Truck, Users, Paperclip, ArrowUpCircle, Check, Calendar, XCircle, AlertTriangle, Info } from "lucide-react";
 
 interface PlanInfo {
   name: string;
