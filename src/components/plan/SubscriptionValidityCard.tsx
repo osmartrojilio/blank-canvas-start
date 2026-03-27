@@ -51,7 +51,8 @@ export default function SubscriptionValidityCard() {
     } else if ((isActive || isCanceledActive) && organization.subscription_ends_at) {
       endDate = new Date(organization.subscription_ends_at);
       startDate = new Date(endDate);
-      startDate.setMonth(startDate.getMonth() - 1);
+      const months = (organization as any).duration_months || 12;
+      startDate.setMonth(startDate.getMonth() - months);
     }
   }
 
