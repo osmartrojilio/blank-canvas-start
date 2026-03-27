@@ -75,6 +75,8 @@ const Dashboard = () => {
           <p className="page-subtitle">Visão geral da sua frota de veículos</p>
         </div>
 
+        <ExpirationAlert />
+
         {/* Subscription Validity */}
         <div className="mb-6">
           <SubscriptionValidityCard />
