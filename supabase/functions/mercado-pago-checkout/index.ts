@@ -57,9 +57,13 @@ function checkRateLimit(organizationId: string): { allowed: boolean; retryAfter?
   return { allowed: true };
 }
 
-// Calculate subscription end date based on duration_months from payment date
-function calculateSubscriptionEndDate(durationMonths: number): Date {
-  const endDate = new Date();
+// Calculate subscription end date: if renewing with active time left, extend from current end date
+function calculateSubscriptionEndDate(durationMonths: number, currentEndsAt?: string | null): Date {
+  const now = new Date();
+  const baseDate = currentEndsAt && new Date(currentEndsAt) > now
+    ? new Date(currentEndsAt)
+    : now;
+  const endDate = new Date(baseDate);
   endDate.setMonth(endDate.getMonth() + durationMonths);
   return endDate;
 }
@@ -362,7 +366,14 @@ Deno.serve(async (req) => {
 
     // If approved immediately, activate subscription
     if (paymentData.status === "approved") {
-      const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months);
+      // Fetch current subscription end date for renewal logic
+      const { data: orgData } = await supabaseAdmin
+        .from("organizations")
+        .select("subscription_ends_at")
+        .eq("id", organization_id)
+        .single();
+
+      const subscriptionEndsAt = calculateSubscriptionEndDate(duration_months, orgData?.subscription_ends_at);
 
       await supabaseAdmin
         .from("organizations")
