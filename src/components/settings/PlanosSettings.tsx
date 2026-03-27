@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import SubscriptionValidityCard from "@/components/plan/SubscriptionValidityCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -250,6 +251,9 @@ export function PlanosSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Subscription validity card */}
+      <SubscriptionValidityCard />
+
       {/* Status banner for canceled/expired states */}
       {statusBanner && (
         <Card className="border-destructive/50 bg-destructive/5">
