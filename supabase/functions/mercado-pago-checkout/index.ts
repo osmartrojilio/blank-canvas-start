@@ -57,9 +57,10 @@ function checkRateLimit(organizationId: string): { allowed: boolean; retryAfter?
   return { allowed: true };
 }
 
-// Calculate subscription end date based on duration_months
-function calculateSubscriptionEndDate(durationMonths: number): Date {
-  const endDate = new Date();
+// Calculate subscription end date based on duration_months from org creation date
+function calculateSubscriptionEndDate(durationMonths: number, orgCreatedAt?: string): Date {
+  const baseDate = orgCreatedAt ? new Date(orgCreatedAt) : new Date();
+  const endDate = new Date(baseDate);
   endDate.setMonth(endDate.getMonth() + durationMonths);
   return endDate;
 }
