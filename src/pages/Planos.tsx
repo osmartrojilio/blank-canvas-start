@@ -511,8 +511,10 @@ export default function Planos() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          )}
         </div>
-      )}
+        );
+      })()}
 
       {/* Duration Selector */}
       <div className="flex justify-center mb-8">
