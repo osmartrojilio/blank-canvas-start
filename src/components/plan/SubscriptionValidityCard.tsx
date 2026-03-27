@@ -64,23 +64,25 @@ export default function SubscriptionValidityCard() {
           <span>{formatDateBR(endDate)}</span>
         </div>
 
-        <div className="border-t border-border pt-3">
-          <p className="text-sm text-muted-foreground mb-3">
-            {isCanceledActive
-              ? "Sua assinatura foi cancelada. O acesso será mantido até o fim do período."
-              : "Renove agora com desconto exclusivo de 20% e não perca acesso"}
-          </p>
-          {!isCanceledActive && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/configuracoes?tab=planos")}
-            >
-              <Gift className="h-4 w-4 mr-2" />
-              Renovar
-            </Button>
-          )}
-        </div>
+        {daysLeft <= 3 && (
+          <div className="border-t border-border pt-3">
+            <p className="text-sm text-muted-foreground mb-3">
+              {isCanceledActive
+                ? "Sua assinatura foi cancelada. O acesso será mantido até o fim do período."
+                : "Renove agora com desconto exclusivo de 20% e não perca acesso"}
+            </p>
+            {!isCanceledActive && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/configuracoes?tab=planos")}
+              >
+                <Gift className="h-4 w-4 mr-2" />
+                Renovar
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
