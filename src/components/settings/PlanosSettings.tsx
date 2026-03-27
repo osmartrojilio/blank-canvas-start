@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionValidityCard from "@/components/plan/SubscriptionValidityCard";
+import ExpirationAlert from "@/components/plan/ExpirationAlert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -251,6 +252,9 @@ export function PlanosSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Expiration alert */}
+      <ExpirationAlert />
+
       {/* Subscription validity card */}
       <SubscriptionValidityCard />
 
