@@ -6,6 +6,7 @@ import RecentTrips from "@/components/dashboard/RecentTrips";
 import FleetOverview from "@/components/dashboard/FleetOverview";
 import FuelChart from "@/components/dashboard/FuelChart";
 import SubscriptionValidityCard from "@/components/plan/SubscriptionValidityCard";
+import ExpirationAlert from "@/components/plan/ExpirationAlert";
 import TripProfitabilityTable from "@/components/dashboard/TripProfitabilityTable";
 import ProactiveAlertsPanel from "@/components/dashboard/ProactiveAlertsPanel";
 import { useVehicles } from "@/hooks/useVehicles";
