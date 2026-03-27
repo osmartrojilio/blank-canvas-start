@@ -396,11 +396,16 @@ export default function Planos() {
       )}
 
       {/* Active Subscription Banner */}
-      {organization?.subscription_status === "active" && organization?.subscription_ends_at && (
+      {organization?.subscription_status === "active" && organization?.subscription_ends_at && (() => {
+        const canCancel = organization.last_payment_at
+          ? Math.floor((new Date().getTime() - new Date(organization.last_payment_at).getTime()) / (1000 * 60 * 60 * 24)) <= 7
+          : false;
+        return (
         <div className="mb-8 p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-center space-y-3">
           <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-            ✓ Assinatura ativa até {new Date(organization.subscription_ends_at).toLocaleDateString("pt-BR")}
+            ✓ Assinatura ativa até {new Date(organization.subscription_ends_at!).toLocaleDateString("pt-BR")}
           </p>
+          {canCancel && (
           <AlertDialog onOpenChange={(open) => { if (open) fetchPaymentInfo(); }}>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
